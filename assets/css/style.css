@@ -1,0 +1,324 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+  font-family: "Arial", sans-serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  padding: 20px;
+}
+
+.game-container {
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+}
+
+#game-area {
+  flex: 1;
+  position: relative;
+  border-right: 4px solid #444;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><rect width="50" height="50" fill="none" stroke="rgba(255,255,255,0.1)" /></svg>');
+}
+
+.side-panel {
+  width: 250px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#stats-panel {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+#lives-container {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+}
+
+.life {
+  width: 20px;
+  height: 20px;
+  background: #ff4444;
+  border-radius: 50%;
+  position: relative;
+  animation: pulse 1.5s infinite;
+}
+
+#liquid-container {
+  width: 60px;
+  height: 400px;
+  background: #333;
+  border-radius: 30px;
+  position: relative;
+  margin: 20px 0;
+  border: 3px solid #444;
+  overflow: hidden;
+}
+
+#liquid {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(to bottom, #4fc3f7, #2196f3);
+  transition: height 0.3s ease;
+  border-radius: 0 0 30px 30px;
+  box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+}
+
+#collector {
+  width: 120px;
+  height: 70px;
+  background: linear-gradient(45deg, #666, #999);
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 15px;
+  border: 3px solid #444;
+  transition: transform 0.1s;
+  z-index: 10;
+}
+
+#collector::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 60%;
+  background: linear-gradient(45deg, #444, #777);
+  border-radius: 10px;
+}
+
+.part {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  animation: rotate 2s infinite linear;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+.gear {
+  clip-path: polygon(
+    50% 0%,
+    80% 10%,
+    100% 35%,
+    100% 70%,
+    80% 90%,
+    50% 100%,
+    20% 90%,
+    0% 70%,
+    0% 35%,
+    20% 10%
+  );
+  background: linear-gradient(45deg, #ffd700, #ffa500);
+}
+
+.bolt {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  background: linear-gradient(45deg, #90a4ae, #607d8b);
+}
+
+.spring {
+  border-radius: 50%;
+  background: linear-gradient(45deg, #9ccc65, #7cb342);
+  border: 3px solid #558b2f;
+}
+
+.crystal {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  background: linear-gradient(45deg, #e91e63, #ff4081);
+}
+
+.score-container {
+  text-align: center;
+  padding: 20px;
+  font-size: 24px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.multiplier {
+  font-size: 18px;
+  color: #4fc3f7;
+  margin-top: 10px;
+  text-shadow: 0 0 5px rgba(79, 195, 247, 0.5);
+}
+
+.combo-text {
+  position: absolute;
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+  animation: float-up 1s ease-out forwards;
+}
+
+.particles {
+  position: absolute;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: particle 0.5s ease-out forwards;
+}
+
+#game-over {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: rgba(0, 0, 0, 0.95);
+  padding: 40px;
+  border-radius: 20px;
+  text-align: center;
+  display: none;
+  animation: pop-in 0.5s ease-out forwards;
+}
+
+#game-over h2 {
+  font-size: 36px;
+  margin-bottom: 20px;
+  color: #ff4444;
+  text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+}
+
+#game-over p {
+  font-size: 24px;
+  margin-bottom: 30px;
+}
+
+.btn {
+  padding: 12px 24px;
+  font-size: 18px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(45deg, #4caf50, #45a049);
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin: 10px;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+.level-indicator {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 24px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.power-up {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffd700, #ffa500);
+  animation: float 2s infinite ease-in-out;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes particle {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+.hidden {
+  display: none !important;
+}

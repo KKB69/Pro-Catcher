@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pro Catcher</title>
+    <link rel="stylesheet" href="assets/css/homepage.css" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="assets/img/circle.svg"
+      sizes="any"
+    />
+  </head>
+  <body>
+    <video class="video-background" autoplay muted loop playsinline>
+      <source src="assets/video/homepage.mp4" type="video/mp4" />
+    </video>
+    <div id="main-menu" class="menu-screen">
+      <div class="title-container">
+        <h1 class="title" data-text="PRO-CATCHER">PRO-CATCHER</h1>
+        <p class="subtitle">Master the Mechanical Challenge</p>
+      </div>
+      <div class="menu-buttons">
+        <button class="btn play-btn" onclick="startGame()">Play Now</button>
+        <button class="btn" onclick="showDifficulties()">Difficulty</button>
+        <button class="btn" onclick="showThemes()">Themes</button>
+        <button class="btn" onclick="showSettings()">Settings</button>
+        <button class="btn" onclick="showAbout()">About</button>
+        <button class="btn" onclick="exitGame()">Exit</button>
+      </div>
+      <div class="version-info">v2.0.0</div>
+    </div>
+
+    <div id="difficulties-modal" class="modal">
+      <button class="close-btn" onclick="closeModal('difficulties-modal')">
+        ×
+      </button>
+      <h2>Select Difficulty</h2>
+      <div class="menu-buttons">
+        <button
+          class="selection-btn"
+          data-difficulty="easy"
+          onclick="setDifficulty('easy')"
+        >
+          Rookie Engineer
+        </button>
+        <button
+          class="selection-btn"
+          data-difficulty="medium"
+          onclick="setDifficulty('medium')"
+        >
+          Master Technician
+        </button>
+        <button
+          class="selection-btn"
+          data-difficulty="hard"
+          onclick="setDifficulty('hard')"
+        >
+          Chief Engineer
+        </button>
+      </div>
+    </div>
+
+    <div id="themes-modal" class="modal">
+      <button class="close-btn" onclick="closeModal('themes-modal')">×</button>
+      <h2>Select Theme</h2>
+      <div class="menu-buttons">
+        <button
+          class="selection-btn"
+          data-theme="mechanical"
+          onclick="setTheme('mechanical')"
+        >
+          Industrial
+        </button>
+        <button
+          class="selection-btn"
+          data-theme="futuristic"
+          onclick="setTheme('futuristic')"
+        >
+          Quantum Tech
+        </button>
+        <button
+          class="selection-btn"
+          data-theme="cyberpunk"
+          onclick="setTheme('cyberpunk')"
+        >
+          cyberpunk
+        </button>
+      </div>
+    </div>
+
+    <div id="settings-modal" class="modal">
+      <button class="close-btn" onclick="closeModal('settings-modal')">
+        ×
+      </button>
+      <h2>Settings</h2>
+      <div class="modal-content">
+        <div class="setting-item">
+          <label>Sound Effects</label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value="50"
+            class="slider"
+            name="sound"
+          />
+        </div>
+        <div class="setting-item">
+          <label>Music</label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value="50"
+            class="slider"
+            name="music"
+          />
+        </div>
+        <div class="setting-item">
+          <label>
+            <input
+              type="checkbox"
+              checked
+              name="screenShake"
+              onchange="toggleScreenShake(this.checked)"
+            />
+            Screen Shake
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div id="about-modal" class="modal">
+      <button class="close-btn" onclick="closeModal('about-modal')">×</button>
+      <h2>About Pro-Catcher</h2>
+      <div class="modal-content">
+        <p>
+          Welcome to Pro-Catcher, where engineering meets excitement! Test your
+          skills as a master parts collector in this thrilling mechanical
+          adventure.
+        </p>
+        <p>
+          Navigate through increasingly challenging levels, catch vital
+          mechanical components, and avoid obstacles to maintain the perfect
+          engineering flow.
+        </p>
+        <br />
+        <p>Version: 2.0.0</p>
+        <p>Created by: KEBAL KISHOR BASTOLA</p>
+      </div>
+    </div>
+
+    <script src="assets/js/homepage.js"></script>
+  </body>
+</html>

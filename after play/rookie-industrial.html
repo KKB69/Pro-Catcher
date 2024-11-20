@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pro catcher</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+        font-family: "Arial", sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        padding: 20px;
+      }
+
+      .game-container {
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        display: flex;
+      }
+
+      #game-area {
+        flex: 1;
+        position: relative;
+        border-right: 4px solid #444;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><rect width="50" height="50" fill="none" stroke="rgba(255,255,255,0.1)" /></svg>');
+      }
+
+      .side-panel {
+        width: 250px;
+        padding: 20px;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      #stats-panel {
+        width: 100%;
+        margin-bottom: 20px;
+      }
+
+      .stat-item {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+      }
+
+      #lives-container {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 15px;
+      }
+
+      .life {
+        width: 20px;
+        height: 20px;
+        background: #ff4444;
+        border-radius: 50%;
+        position: relative;
+        animation: pulse 1.5s infinite;
+      }
+
+      #liquid-container {
+        width: 60px;
+        height: 400px;
+        background: #333;
+        border-radius: 30px;
+        position: relative;
+        margin: 20px 0;
+        border: 3px solid #444;
+        overflow: hidden;
+      }
+
+      #liquid {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 0%;
+        background: linear-gradient(to bottom, #4fc3f7, #2196f3);
+        transition: height 0.3s ease;
+        border-radius: 0 0 30px 30px;
+        box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+      }
+
+      #collector {
+        width: 120px;
+        height: 70px;
+        background: linear-gradient(45deg, #666, #999);
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 15px;
+        border: 3px solid #444;
+        transition: transform 0.1s;
+        z-index: 10;
+      }
+
+      #collector::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        height: 60%;
+        background: linear-gradient(45deg, #444, #777);
+        border-radius: 10px;
+      }
+
+      .part {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        animation: rotate 2s infinite linear;
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+      }
+
+      .gear {
+        clip-path: polygon(
+          50% 0%,
+          80% 10%,
+          100% 35%,
+          100% 70%,
+          80% 90%,
+          50% 100%,
+          20% 90%,
+          0% 70%,
+          0% 35%,
+          20% 10%
+        );
+        background: linear-gradient(45deg, #ffd700, #ffa500);
+      }
+
+      .bolt {
+        clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        background: linear-gradient(45deg, #90a4ae, #607d8b);
+      }
+
+      .spring {
+        border-radius: 50%;
+        background: linear-gradient(45deg, #9ccc65, #7cb342);
+        border: 3px solid #558b2f;
+      }
+
+      .crystal {
+        clip-path: polygon(
+          50% 0%,
+          100% 25%,
+          100% 75%,
+          50% 100%,
+          0% 75%,
+          0% 25%
+        );
+        background: linear-gradient(45deg, #e91e63, #ff4081);
+      }
+
+      .score-container {
+        text-align: center;
+        padding: 20px;
+        font-size: 24px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .multiplier {
+        font-size: 18px;
+        color: #4fc3f7;
+        margin-top: 10px;
+        text-shadow: 0 0 5px rgba(79, 195, 247, 0.5);
+      }
+
+      .combo-text {
+        position: absolute;
+        font-size: 24px;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+        pointer-events: none;
+        animation: float-up 1s ease-out forwards;
+      }
+
+      .particles {
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .particle {
+        position: absolute;
+        background: white;
+        border-radius: 50%;
+        pointer-events: none;
+        animation: particle 0.5s ease-out forwards;
+      }
+
+      #game-over {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        background: rgba(0, 0, 0, 0.95);
+        padding: 40px;
+        border-radius: 20px;
+        text-align: center;
+        display: none;
+        animation: pop-in 0.5s ease-out forwards;
+      }
+
+      #game-over h2 {
+        font-size: 36px;
+        margin-bottom: 20px;
+        color: #ff4444;
+        text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+      }
+
+      #game-over p {
+        font-size: 24px;
+        margin-bottom: 30px;
+      }
+
+      .btn {
+        padding: 12px 24px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(45deg, #4caf50, #45a049);
+        color: white;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin: 10px;
+      }
+
+      .btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+      }
+
+      .level-indicator {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        font-size: 24px;
+        color: #fff;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .power-up {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #ffd700, #ffa500);
+        animation: float 2s infinite ease-in-out;
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      }
+
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes particle {
+        0% {
+          transform: translate(0, 0) scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(var(--dx), var(--dy)) scale(0);
+          opacity: 0;
+        }
+      }
+
+      @keyframes float-up {
+        0% {
+          transform: translateY(0) scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-50px) scale(1.2);
+          opacity: 0;
+        }
+      }
+
+      @keyframes pop-in {
+        0% {
+          transform: translate(-50%, -50%) scale(0.5);
+          opacity: 0;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 1;
+        }
+      }
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="game-container">
+      <div id="game-area">
+        <div class="level-indicator">Level: 1</div>
+        <div id="collector"></div>
+      </div>
+
+      <div class="side-panel">
+        <div id="stats-panel">
+          <div class="stat-item">Score: <span id="score">0</span></div>
+          <div class="stat-item">
+            Lives:
+            <div id="lives-container">
+              <div class="life"></div>
+              <div class="life"></div>
+              <div class="life"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="liquid-container">
+          <div id="liquid"></div>
+        </div>
+
+        <div class="score-container">
+          Combo: <span id="combo">0</span>x
+          <div class="multiplier">
+            Multiplier: <span id="multiplier">1</span>x
+          </div>
+        </div>
+      </div>
+
+      <div id="game-over" class="hidden">
+        <h2>Game Over!</h2>
+        <p>Final Score: <span id="final-score">0</span></p>
+        <button class="btn" onclick="restartGame()">Play Again</button>
+      </div>
+    </div>
+    <script>
+      // Game state variables
+      let score = 0;
+      let multiplier = 1;
+      let liquidLevel = 0;
+      let gameRunning = false;
+      let spawnInterval;
+      let level = 1;
+      let lives = 3;
+      let consecutiveCollects = 0;
+      let powerUpActive = false;
+
+      // DOM elements
+      const collector = document.getElementById("collector");
+      const gameArea = document.getElementById("game-area");
+      const liquid = document.getElementById("liquid");
+      const scoreDisplay = document.getElementById("score");
+      const multiplierDisplay = document.getElementById("multiplier");
+      const comboDisplay = document.getElementById("combo");
+      const levelDisplay = document.querySelector(".level-indicator");
+      const livesContainer = document.getElementById("lives-container");
+      const gameOverScreen = document.getElementById("game-over");
+      const finalScoreDisplay = document.getElementById("final-score");
+
+      // Sound effects (using AudioContext)
+      const audioContext = new (window.AudioContext ||
+        window.webkitAudioContext)();
+
+      function createSound(type) {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        switch (type) {
+          case "collect":
+            // Happy collection sound
+            oscillator.type = "sine";
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(
+              880,
+              audioContext.currentTime + 0.1
+            );
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(
+              0.01,
+              audioContext.currentTime + 0.1
+            );
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
+            break;
+
+          case "powerup":
+            // Special powerup collection sound
+            oscillator.type = "square";
+            oscillator.frequency.setValueAtTime(
+              523.25,
+              audioContext.currentTime
+            ); // C5
+            oscillator.frequency.exponentialRampToValueAtTime(
+              987.77,
+              audioContext.currentTime + 0.2
+            ); // B5
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(
+              0.01,
+              audioContext.currentTime + 0.2
+            );
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.2);
+            break;
+
+          case "lose-life":
+            // Sad sound for losing a life
+            oscillator.type = "sawtooth";
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(
+              220,
+              audioContext.currentTime + 0.3
+            );
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(
+              0.01,
+              audioContext.currentTime + 0.3
+            );
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.3);
+            break;
+        }
+      }
+
+      // Part types with different characteristics
+      const partTypes = [
+        { class: "gear", points: 10, speed: 3, probability: 0.4 },
+        { class: "bolt", points: 5, speed: 4, probability: 0.3 },
+        { class: "spring", points: 15, speed: 2, probability: 0.2 },
+        { class: "crystal", points: 25, speed: 5, probability: 0.1 },
+      ];
+
+      function updateLives() {
+        livesContainer.innerHTML = "";
+        for (let i = 0; i < lives; i++) {
+          const life = document.createElement("div");
+          life.className = "life";
+          livesContainer.appendChild(life);
+        }
+      }
+
+      function startGame() {
+        gameRunning = true;
+        score = 0;
+        multiplier = 1;
+        liquidLevel = 0;
+        level = 1;
+        lives = 3;
+        consecutiveCollects = 0;
+        powerUpActive = false;
+
+        updateDisplays();
+        updateLives();
+        levelDisplay.textContent = `Level: ${level}`;
+
+        // Clear any existing parts
+        const parts = document.querySelectorAll(".part");
+        parts.forEach((part) => part.remove());
+
+        // Start spawning parts
+        spawnInterval = setInterval(
+          spawnPart,
+          Math.max(1000 - level * 50, 400)
+        );
+        gameOverScreen.classList.add("hidden");
+      }
+
+      function spawnPart() {
+        if (!gameRunning) return;
+
+        const part = document.createElement("div");
+
+        // Select part type based on probability
+        const rand = Math.random();
+        let cumProb = 0;
+        const selectedPart =
+          partTypes.find((type) => {
+            cumProb += type.probability;
+            return rand <= cumProb;
+          }) || partTypes[0];
+
+        part.className = `part ${selectedPart.class}`;
+        part.dataset.points = selectedPart.points;
+
+        const gameAreaRect = gameArea.getBoundingClientRect();
+        const maxX = gameAreaRect.width - 30;
+        part.style.left = Math.random() * maxX + "px";
+        part.style.top = "-30px";
+
+        gameArea.appendChild(part);
+
+        let pos = -30;
+        const baseSpeed = selectedPart.speed * (1 + level * 0.1);
+
+        const fall = setInterval(() => {
+          if (!gameRunning) {
+            clearInterval(fall);
+            return;
+          }
+
+          pos += baseSpeed;
+          part.style.top = pos + "px";
+
+          const partRect = part.getBoundingClientRect();
+          const collectorRect = collector.getBoundingClientRect();
+
+          if (isColliding(partRect, collectorRect)) {
+            collectPart(part, selectedPart.points);
+            createSound("collect");
+            clearInterval(fall);
+            part.remove();
+          }
+
+          if (pos > gameAreaRect.height) {
+            clearInterval(fall);
+            part.remove();
+            createSound("lose-life");
+            missPart();
+          }
+        }, 16);
+      }
+
+      function missPart() {
+        lives--;
+        updateLives();
+        multiplier = 1;
+        consecutiveCollects = 0;
+        updateDisplays();
+
+        // Play lose life sound
+        createSound("lose-life");
+
+        if (lives <= 0) {
+          endGame();
+        }
+      }
+
+      function collectPart(part, points) {
+        const basePoints = points * multiplier;
+        const finalPoints = powerUpActive ? basePoints * 2 : basePoints;
+
+        score += finalPoints;
+        consecutiveCollects++;
+        multiplier = Math.min(multiplier + 1, 10);
+        liquidLevel = Math.min(100, liquidLevel + points / 10);
+
+        updateDisplays();
+        createFloatingText(part, `+${finalPoints}`);
+        createParticles(part.getBoundingClientRect());
+
+        // Play collection sound
+        createSound("collect");
+
+        if (consecutiveCollects % 10 === 0) {
+          spawnPowerUp();
+        }
+
+        if (score > level * 1000) {
+          levelUp();
+        }
+      }
+
+      function createFloatingText(element, text) {
+        const floatingText = document.createElement("div");
+        floatingText.className = "combo-text";
+        floatingText.textContent = text;
+        floatingText.style.left = element.style.left;
+        floatingText.style.top = element.style.top;
+        gameArea.appendChild(floatingText);
+        setTimeout(() => floatingText.remove(), 1000);
+      }
+
+      function createParticles(rect) {
+        const particles = document.createElement("div");
+        particles.className = "particles";
+        particles.style.left = rect.left + rect.width / 2 + "px";
+        particles.style.top = rect.top + rect.height / 2 + "px";
+
+        for (let i = 0; i < 10; i++) {
+          const particle = document.createElement("div");
+          particle.className = "particle";
+          particle.style.setProperty(
+            "--dx",
+            (Math.random() - 0.5) * 100 + "px"
+          );
+          particle.style.setProperty(
+            "--dy",
+            (Math.random() - 0.5) * 100 + "px"
+          );
+          particle.style.width = Math.random() * 4 + 2 + "px";
+          particle.style.height = particle.style.width;
+          particles.appendChild(particle);
+        }
+
+        gameArea.appendChild(particles);
+        setTimeout(() => particles.remove(), 500);
+      }
+
+      function spawnPowerUp() {
+        const powerUp = document.createElement("div");
+        powerUp.className = "power-up";
+
+        const gameAreaRect = gameArea.getBoundingClientRect();
+        const maxX = gameAreaRect.width - 40;
+        powerUp.style.left = Math.random() * maxX + "px";
+        powerUp.style.top = "-40px";
+
+        gameArea.appendChild(powerUp);
+
+        let pos = -40;
+        const fall = setInterval(() => {
+          if (!gameRunning) {
+            clearInterval(fall);
+            return;
+          }
+
+          pos += 2;
+          powerUp.style.top = pos + "px";
+
+          const powerUpRect = powerUp.getBoundingClientRect();
+          const collectorRect = collector.getBoundingClientRect();
+
+          if (isColliding(powerUpRect, collectorRect)) {
+            activatePowerUp();
+            clearInterval(fall);
+            powerUp.remove();
+          }
+
+          if (pos > gameAreaRect.height) {
+            clearInterval(fall);
+            powerUp.remove();
+          }
+        }, 16);
+      }
+
+      function activatePowerUp() {
+        powerUpActive = true;
+        const effect = document.createElement("div");
+        effect.className = "combo-text";
+        effect.textContent = "🌟 Double Points!";
+        effect.style.left = "50%";
+        effect.style.top = "50%";
+        effect.style.transform = "translate(-50%, -50%)";
+        gameArea.appendChild(effect);
+
+        // Play powerup sound
+        createSound("powerup");
+
+        setTimeout(() => {
+          effect.remove();
+          powerUpActive = false;
+        }, 10000);
+      }
+
+      function levelUp() {
+        level++;
+        levelDisplay.textContent = `Level: ${level}`;
+
+        createFloatingText(
+          {
+            style: {
+              left: "50%",
+              top: "50%",
+            },
+          },
+          `Level ${level}!`
+        );
+
+        // Increase spawn rate
+        clearInterval(spawnInterval);
+        spawnInterval = setInterval(
+          spawnPart,
+          Math.max(1000 - level * 50, 400)
+        );
+      }
+
+      function updateDisplays() {
+        scoreDisplay.textContent = score;
+        multiplierDisplay.textContent = multiplier;
+        comboDisplay.textContent = consecutiveCollects;
+        liquid.style.height = liquidLevel + "%";
+      }
+
+      function isColliding(rect1, rect2) {
+        return !(
+          rect1.right < rect2.left ||
+          rect1.left > rect2.right ||
+          rect1.bottom < rect2.top ||
+          rect1.top > rect2.bottom
+        );
+      }
+
+      // Updated moveCollector function for better movement
+      function moveCollector(e) {
+        if (!gameRunning) return;
+
+        const gameAreaRect = gameArea.getBoundingClientRect();
+        const collectorRect = collector.getBoundingClientRect();
+
+        // Calculate the mouse position relative to the game area
+        const mouseX = e.clientX - gameAreaRect.left;
+
+        // Calculate new position, accounting for the collector's width
+        let newX = mouseX - collectorRect.width / 2;
+
+        // Ensure the collector stays within the game area bounds
+        newX = Math.max(
+          0,
+          Math.min(newX, gameAreaRect.width - collectorRect.width)
+        );
+
+        collector.style.left = newX + "px";
+      }
+
+      function endGame() {
+        gameRunning = false;
+        clearInterval(spawnInterval);
+        finalScoreDisplay.textContent = score;
+        gameOverScreen.classList.remove("hidden");
+      }
+
+      // Event listeners
+      gameArea.addEventListener("mousemove", moveCollector);
+      document.addEventListener("keydown", (e) => {
+        if (!gameRunning) return;
+
+        const collectorRect = collector.getBoundingClientRect();
+        const gameAreaRect = gameArea.getBoundingClientRect();
+        const currentLeft = collectorRect.left - gameAreaRect.left;
+        const step = 20;
+
+        if (e.key === "ArrowLeft") {
+          const newX = Math.max(0, currentLeft - step);
+          collector.style.left = newX + "px";
+        } else if (e.key === "ArrowRight") {
+          const maxX = gameAreaRect.width - collectorRect.width;
+          const newX = Math.min(maxX, currentLeft + step);
+          collector.style.left = newX + "px";
+        }
+      });
+
+      // Make restartGame function available globally
+      window.restartGame = startGame;
+
+      // Start the game when the page loads
+      document.addEventListener("DOMContentLoaded", startGame);
+    </script>
+  </body>
+</html>
